@@ -1,9 +1,10 @@
-const { toast, touchMove, touchUp, usleep, appActivate, keyDown, keyUp, copyText, clipText, inputText } = at
+const { toast, usleep, appActivate } = at
 const { getData } = require("./request.js");
 const { openApp } = require("./task.js");
 const { getOTPVietcombank, postOTPVietcombank, checkColorVCB } = require("./taskVietcombank");
 const { checkColorVTB, checkQueueVTB } = require("./taskVietinbank")
 const { getQRCodeBIDV, taskBIDV, checkColorScanOTPBIDV, postOTPBIDV } = require("./taskBIDV")
+const {  getQRCodeMBB, checkColorsMBB } = require("./taskMbbank.js")
 //-----------------------------------------------------------------------------------------------
 for (let i = 10; i > 5; i++) {//> mặc định
     usleep(2500000);
@@ -13,9 +14,8 @@ for (let i = 10; i > 5; i++) {//> mặc định
 async function run() {
     await getData()
         .then(data => {
-
             if (data !== '0') {
-                            console.log('Đã get được queue')
+                console.log('Đã get được queue')
                 if (data['app'] == "com.vcb.VCB") {
                     openApp(data['app']);
                     for (let i = 1; i < 10; i++) {
@@ -33,9 +33,8 @@ async function run() {
                             usleep(500000)
                         }
                     }
-
                 } else if (data['app'] == "com.vietinbank.mobilebanking") {
-                    at.toast("Xử lý Vietinbank");
+                    toast("Xử lý Vietinbank");
                     openApp(data['app']);
                     for (let i = 1; i < 12; i++) {
                         color = checkColorVTB()
@@ -51,13 +50,6 @@ async function run() {
                         } else {
                             toast("Kiểm tra màu lần: " + i)
                             usleep(1000000)
-                            // if (i === 11){
-                            //     toast("Đã vào đến đây")
-                            //     checkQueueVTB(data)
-                            //     at.appKill(data['app']);
-                            //     toast("Đã kill Vietinbank")
-                            //     usleep(10000000)
-                            // }
                         }
                     }
                     usleep(5000000)
@@ -79,14 +71,20 @@ async function run() {
                             //Click xác thực giao dịch
                             taskBIDV()
                             postOTPBIDV(data)
-                            usleep(10000000)
+                            usleep(15000000)
                             break
-                            //----------------------------------------------------
                         } else {
                             toast("Kiểm tra màu lần: " + i)
                             usleep(1000000)
                         }
                     }
+                    //----------------------------------------------------
+                } else if (data['app'] == "com.mbmobile") {
+                    toast("Xử lý MB Bank")
+                    getQRCodeMBB(data)
+                    openApp(data['app'])
+                    checkColorsMBB(data)
+                    usleep(10000000)
                 } else {
                     usleep(2500000);
                     at.toast("Chưa có trong danh sách xử lý");
@@ -94,7 +92,6 @@ async function run() {
                 }
             } else {
                 usleep(2500000);
-                console.log('Kết thúc quá trình')
                 at.toast("Chưa có giao dịch cần xử lý");
 
             }
