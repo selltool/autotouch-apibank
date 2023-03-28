@@ -5,9 +5,9 @@ Có thể jaibreak bằng checkra1n iso tại https://github.com/asineth0/checkn
 Sử dụng Ventoy để boot file iso đơn giản: https://github.com/ventoy/Ventoy/releases
 
 ## Cài đặt các source cần thiết cho Cydia
-    Havoc.app               TrollHelper         Cài đặt Trollstore
-    ios.jjolano.me		Shadow(Legacy)      Ẩn JB
-    repo.autotouch.net	Autotouch           Autotouch
+    Havoc.app                   TrollHelper         Cài đặt Trollstore
+    ios.jjolano.me	        Shadow(Legacy)      Ẩn JB
+    repo.autotouch.net	        Autotouch           Autotouch
 
 - Sau khi cài đặt thành công TrollStore, hãy cài đặt Apps Manager 1.7 để xoá dữ liệu app: https://drive.google.com/file/d/1kxhKBN9uvbiNEvBmd9v8lFGsZhHWkkJk/view?usp=sharing
 
