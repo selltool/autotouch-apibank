@@ -37,8 +37,10 @@ function postDataVTB(id, paymentId) {
             console.log(error);
         });
 }
-function postDataBIDV(idbank, tranid) {
-    return axios.get(url + 'api/otp/bidv?idBank=' + idbank + '&tranxId=' + tranid)
+function postDataBIDV(idbank, tranid, cancel) {
+    uri = url + 'api/otp/bidv?idBank=' + idbank + '&tranxId=' + tranid + '&cancel=' + cancel
+    console.log(uri)
+    return axios.get(uri)
         .then(response => {
             console.log("Return postBIDV: " + JSON.stringify(response, null, 4));
             return response.data;
