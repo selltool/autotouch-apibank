@@ -1,4 +1,4 @@
-const { usleep, getColors, appActivate, keyDown, keyUp, copyText, clipText, inputText, toast, appKill } = at
+const { usleep, appActivate, toast, appKill } = at
 
 function openApp(app) {
     appActivate("com.apple.SpringBoard");

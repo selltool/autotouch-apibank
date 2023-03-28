@@ -1,11 +1,12 @@
 const { usleep, getColors, copyText, clipText, inputText, toast, appKill } = at
 const { postDataVCB } = require("./request.js");
+const config = require('./config');
 function getOTPVietcombank(data) {
     //Click vào ô tạo OTP
     at.tap(370, 930)
     usleep(1000000);
     //Nhập mật khẩu
-    at.inputText('135790') //Thay đổi mật khẩu theo cách của bạn
+    at.inputText(config.passSmartOtpVCB)
     usleep(500000);
     at.tap(390, 650)
     usleep(1500000)
@@ -24,7 +25,8 @@ function postOTPVietcombank(data) {
     let otp = at.clipText()
     postDataVCB(idbank, tranid, otp)
         .then(postData => {
-            toast("Post OTP VCB: " + postData);
+            toast("Post OTP VCB thành công");
+            usleep(1000000)
             appKill(data['app']);
         })
         .catch(error => {

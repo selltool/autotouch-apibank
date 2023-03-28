@@ -1,90 +1,104 @@
-const { usleep, getColors, appActivate, keyDown, keyUp, copyText, clipText, inputText, toast, appKill } = at
-const { postDataBIDV } = require("./request.js");
-
-function getQRCodeBIDV(data) {
-    // at.openURL("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + data['dataSOTP']);
-    at.openURL("https://api.ukm.vn/api/autotouch/qrbidv?data=" + data['dataSOTP']);
-    usleep(5000000)
-    const savePath = null
-    const region = { x: 0, y: 0, width: 750, height: 750 }
-    at.screenshot(savePath, region)
-    usleep(2000000)
-
+const { toast, usleep, appActivate } = at
+const { getData } = require("./request.js");
+const { openApp } = require("./task.js");
+const config = require('./config')
+const { getOTPVietcombank, postOTPVietcombank, checkColorVCB } = require("./taskVietcombank");
+const { checkColorVTB, checkQueueVTB } = require("./taskVietinbank")
+const { getQRCodeBIDV, taskBIDV, checkColorScanOTPBIDV } = require("./taskBIDV")
+const { getQRCodeMBB, checkColorsMBB } = require("./taskMbbank")
+//-----------------------------------------------------------------------------------------------
+for (let i = 10; i > 5; i++) {//> mặc định
+    usleep(2500000);
+    i--
+    run()
 }
-function checkColorScanOTPBIDV() {
-    const [result, error] = getColors([
-        { x: 250, y: 250 },
-        { x: 300, y: 250 },
-        { x: 400, y: 240 }
-    ])
-    if (error) {
-        console.log('Failed to get colors, error: %s', error)
-        return false
-    } else {
-        if (result[0] == result[1] && result[0] === result[2]) {
-            toast("Kiểm tra đúng màu")
-            return true
-        } else {
-            return false
+async function run() {
+    await getData()
+        .then(data => {//then/////////////
+            checkApp = (config.bankWork.includes(data['app']))
+            if (checkApp === true) {
+                if (data['app'] == "com.vcb.VCB") {
+                    openApp(data['app']);
+                    for (let i = 1; i < 10; i++) {
+                        color = checkColorVCB()
+                        if (color == true) {
+                            toast("Đúng màu");
+                            getOTPVietcombank(data);
+                            postOTPVietcombank(data);
+                            usleep(5000000);
+                            at.appKill(data['app']);
+                            usleep(2000000);
+                            break
+                        } else {
+                            toast("Kiểm tra màu lần: " + i)
+                            usleep(500000)
+                        }
+                    }
+                } else if (data['app'] == "com.vietinbank.mobilebanking") {
+                    toast("Xử lý Vietinbank");
+                    openApp(data['app']);
+                    for (let i = 1; i < 12; i++) {
+                        color = checkColorVTB()
+                        if (color == true) {
+                            toast("Đúng màu");
+                            //Click xác thực giao dịch
+                            at.tap(333, 888)
+                            usleep(2000000)
+                            at.tap(368, 1268)
+                            usleep(2000000)
+                            break
+                            //----------------------------------------------------
+                        } else {
+                            toast("Kiểm tra màu lần: " + i)
+                            usleep(1000000)
+                        }
+                    }
+                    usleep(5000000)
+                    //Gửi request check OTP
+                    checkQueueVTB(data)
+                    at.appKill(data['app']);
+                    usleep(10000000)
+                } else if (data['app'] == "com.bidv.smartbanking") {
+                    toast("Xử lý giao dịch BIDV")
+                    usleep(2000000)
+                    getQRCodeBIDV(data)
+                    openApp(data['app'])
+                    at.tap(368, 1268)
+                    usleep(2000000)
+                    for (let i = 1; i < 10; i++) {
+                        color = checkColorScanOTPBIDV()
+                        if (color == true) {
+                            toast("Kiểm tra: Đúng");
+                            //Click xác thực giao dịch
+                            taskBIDV(data)
+                            usleep(15000000)
+                            break
+                        } else {
+                            toast("Kiểm tra màu lần: " + i)
+                            usleep(1000000)
+                        }
+                    }
+                    //----------------------------------------------------
+                } else if (data['app'] == "com.mbmobile") {
+                    toast("Xử lý MB Bank")
+                    getQRCodeMBB(data)
+                    openApp(data['app'])
+                    checkColorsMBB(data)
+                    usleep(10000000)
+                } else {
+                    usleep(2500000);
+                    at.toast("Chưa có trong danh sách xử lý");
+
+                }
+            } else {
+                usleep(2500000);
+                at.toast("Chưa có giao dịch cần xử lý");
+
+            }
         }
-    }
-}
-function taskBIDV(data) {
-    toast(data)
-    at.tap(300, 1090)
-    usleep(3000000)
-    at.tap(100, 400)
-    usleep(2000000)
-    at.tap(688, 1260)
-    usleep(2000000)
-    inputText('13579') //Thay đổi mật khẩu theo cách của bạn
-    usleep(500000)
-    at.tap(360, 1260) // Click vào số 0
-    usleep(500000)
-    at.tap(600, 850)
-    usleep(5000000)
-    importDone(data)
-}
-function importDone(data){
-const [color] = at.getColor(500, 800)
-if (color == 32686){
-    toast('Chuẩn bị huỷ giao dịch')
-    data.cancel = true
-    usleep(1000000)
-    postOTPBIDV(data)
-
-} else if (color == 16777215){
-    toast('Chuẩn bị xác thực giao dịch')
-    data.cancel = false
-    at.tap(450, 1250)
-    usleep(1000000)
-    postOTPBIDV(data)
-} else {
-    toast('Có lỗi tại taskBIDV')
-}
-}
-function postOTPBIDV(data) {
-    toast('Xử lý postOTP')
-    let idbank = data['idbank']
-    let tranxId = data['tranxId']
-    let cancel = data['cancel']
-    toast("Data BIDV" + tranxId)
-    console.log("Chuẩn bị post Data BIDV")
-    postDataBIDV(idbank, tranxId, cancel)
-        .then(postData => {
-            toast("Post OTP BIDV: " + tranxId);
-            usleep(5000000)
-            toast("Kill app BIDV")
-            appKill(data['app']);
-        })
+        )//then/////////////
         .catch(error => {
             console.log(error);
         });
 }
-
-module.exports = {
-    getQRCodeBIDV,
-    checkColorScanOTPBIDV,
-    taskBIDV,
-    postOTPBIDV
-}
+usleep(2000000);

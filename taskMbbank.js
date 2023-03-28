@@ -54,16 +54,15 @@ function importQRCode(data) {
     at.inputText(configs.passSmartOtpMBB)
     usleep(1000000)
     tap(400, 1280)
-    toast('Chuẩn bị force Get Otp')
+    toast('Chuẩn bị force Get OTP')
     forceGetOTP(data)
    
 }
 function forceGetOTP(data){
     for (let i = 1; i < 10; i++) {
-        toast("Đã vào vòng lặp forceGetOTP")
         color = checkColorForceGetOTP()
         if (color == true) {
-            toast("Đúng màu");
+            toast("Tiến hành quét OTP");
             findOTPMBB(data)
             usleep(1000000)
             break
@@ -108,6 +107,7 @@ function findOTPMBB(data) {
             at.toast('Tiến hành Post OTP: ' + result['0']['text'])
             otp = result['0']['text']
             postOTPMBBank(data, otp)
+            usleep(1000000)
             
         }
     })
@@ -119,6 +119,8 @@ function postOTPMBBank(data, otp) {
     postDataMBB(idBank, userId, qrID, otp)
         .then(postData => {
             toast("Post OTP MBB: " + postData);
+            usleep(2500000)
+            toast("Kill MB Bank")
             appKill(data['app']);
         })
         .catch(error => {

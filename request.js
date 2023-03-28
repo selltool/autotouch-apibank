@@ -1,15 +1,30 @@
+const config = require("./config")
 const axios = require('axios');
-url = 'https://api.ukm.vn/' //Bao gồm / ở cuối
+url = config.url
+// function getData() {
+//     return axios.get(url + 'api/autotouch/queue')
+//         .then(response => {
+//             // console.log("Request Get Data: " + JSON.stringify(response.data, null, 4));
+//             return response.data;
+//         })
+//         .catch(error => {
+//             console.log('Lỗi:' + error);
+//         });
+// }
 function getData() {
-    return axios.get(url + 'api/autotouch/queue')
+    bank = config.bankWork.join('_')
+    uri = url + 'api/autotouch/queue?bankWork=' + bank
+    return axios.get(uri)
         .then(response => {
-            console.log("Request Get Data: " + JSON.stringify(response.data, null, 4));
+            // console.log("Request Get Data: " + JSON.stringify(response.data, null, 4));
             return response.data;
         })
         .catch(error => {
             console.log('Lỗi:' + error);
         });
 }
+
+
 function postDataVCB(idbank, tranid, otp) {
     uri = url + 'api/otp/vietcombank?idBank=' + idbank + "&tranid=" + tranid + "&otp=" + otp
     console.log(uri)
